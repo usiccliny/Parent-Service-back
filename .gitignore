@@ -1,0 +1,118 @@
+# Папка сборки Visual Studio
+.vscode/
+.vscode/*
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Папки сборки
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Pp]roperties/
+
+# Временные файлы
+*.userprefs
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+*.scc
+
+# Автоматически сгенерированные файлы
+*.g.*
+*.generated.cs
+*.csproj.FileListAbsolute.txt
+*.cspkg
+*.pfx
+*.publishsettings
+
+# Папки, созданные пакетом
+*.pyc
+*.pyo
+*.temp
+*.DS_Store
+
+# Пакеты NuGet
+*.nupkg
+*.nuspec
+
+# Обнаруженные зависимости
+packages/
+!packages/build/
+!packages/repositories.config
+
+# Секреты пользователя
+secrets.json
+launchSettings.json
+appsettings.json
+appsettings.Development.json
+
+# Сертификаты
+*.pfx
+*.p12
+
+# Модули Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Папка инструментов .NET
+tools/
+
+# Файлы конфигурации Rider
+.idea/
+
+# Файлы конфигурации Visual Studio
+.vs/
+.vscode/
+
+# Временные папки компиляции
+tmp/
+
+# Папки log
+logs/
+*.log
+
+# Папки для исключения тестовых результатов
+TestResults/
+[Dd]ebug/
+[Rr]elease/
+
+# Временные файлы системы
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Кэш запросов ASP.NET
+aspnet_client/
+iisexpress/
+
+# JetBrains Rider
+.idea/
+
+# NDepend
+ndependout/
+
+WeatherForecast.cs
+Views/
+Controllers/WeatherForecastController.cs
+
+.env

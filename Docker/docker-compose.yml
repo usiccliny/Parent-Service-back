@@ -1,0 +1,33 @@
+services:
+  tg-parent-back:
+    image: registry.qpilipp.ru/psu-mkr-2024/6-tg-watcher/parent-service-back:${IMAGE_VERSION:?error}
+    container_name: tg-watcher-back
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8521:8080"
+    depends_on:
+      - tg-watcher-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - tg-watcher-network
+
+  tg-watcher-db:
+    image: postgres:16.2
+    container_name: tg-watcher-db
+    environment:
+      POSTGRES_DB: $POSTGRES_DB
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+    volumes:
+      - tg-watcher-db-data:/var/lib/postgresql/data
+    networks:
+      - tg-watcher-network
+
+volumes:
+  tg-watcher-db-data:
+
+networks:
+  tg-watcher-network:

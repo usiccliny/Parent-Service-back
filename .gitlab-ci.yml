@@ -1,0 +1,68 @@
+stages:
+  - lint    
+  - build-push
+  - deploy
+
+.ssh_defaults:
+  image: kroniak/ssh-client
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $REMOTE_PORT $REMOTE_HOST >> ~/.ssh/known_hosts
+    - chmod 664 ~/.ssh/known_hosts
+
+lint_job:
+  stage: lint
+  image: "$CI_REGISTRY_IMAGE/ci-lint-image:latest"
+  rules:
+    - changes:
+        - Server/**/*.cs
+  script:
+    - dotnet-format Server/Server.csproj --check
+  artifacts:
+    paths:
+      - .nuget/packages/
+  cache:
+    paths:
+      - .nuget/packages/
+
+build-push:
+  stage: build-push
+  needs: [lint_job]
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
+      when: manual
+  image: kroniak/ssh-client
+  before_script:
+    - eval $(ssh-agent -s)
+    - echo "$BUILDER_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $REMOTE_PORT $BUILDER_HOST >> ~/.ssh/known_hosts
+    - chmod 664 ~/.ssh/known_hosts
+  script:
+    - echo -e "$APPSETTINGS_JSON_CONTENT" > appsettings.json
+    - echo -e "IMAGE=$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG" > tag.env
+    - scp appsettings.json $BUILDER_USER@$BUILDER_HOST:tg-watcher-back/appsettings.json
+    - scp tag.env $BUILDER_USER@$BUILDER_HOST:tg-watcher-back/tag.env 
+    - ssh $BUILDER_USER@$BUILDER_HOST tg-watcher-back/build-push.sh
+
+deploy:
+  stage: deploy
+  needs: [build-push]    
+  rules:
+    - if: '$CI_COMMIT_TAG != null'
+      when: manual
+  extends: .ssh_defaults
+  script:
+    - echo -e "$ENV_FILE_CONTENT" > .env
+    - echo "IMAGE_VERSION=$CI_COMMIT_TAG" >> .env
+    - ssh $REMOTE_USER@$REMOTE_HOST rm -fr $REMOTE_FOLDER
+    - ssh $REMOTE_USER@$REMOTE_HOST mkdir -p $REMOTE_FOLDER
+    - ssh $REMOTE_USER@$REMOTE_HOST -p $REMOTE_PORT mkdir -p $REMOTE_FOLDER/Docker
+    - scp "Docker/docker-compose.yml" $REMOTE_USER@$REMOTE_HOST:$REMOTE_FOLDER/Docker/docker-compose.yml
+    - scp ".env" $REMOTE_USER@$REMOTE_HOST:$REMOTE_FOLDER/.env
+    - ssh $REMOTE_USER@$REMOTE_HOST docker compose --env-file $REMOTE_FOLDER/.env -f $REMOTE_FOLDER/Docker/docker-compose.yml up -d
+    - ssh $REMOTE_USER@$REMOTE_HOST rm $REMOTE_FOLDER/.env
